@@ -28,6 +28,7 @@ nav {
     background: #111827;
     padding: 15px;
     text-align: center;
+    z-index: 10;
 }
 
 nav a {
@@ -42,9 +43,12 @@ nav a:hover {
 }
 
 section {
-    padding: 50px 20px;
+    min-height: 100vh;
+    padding: 80px 20px;
     text-align: center;
-    min-height: 60vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .hero {
@@ -52,15 +56,11 @@ section {
     color: white;
 }
 
-.hero h1 {
-    font-size: 40px;
-}
-
 .card {
     background: white;
-    padding: 25px;
-    margin: 20px auto;
+    padding: 30px;
     max-width: 600px;
+    width: 100%;
     border-radius: 15px;
     box-shadow: 0 5px 15px #0002;
 }
@@ -82,8 +82,8 @@ button:hover {
 footer {
     background: #111827;
     color: white;
-    padding: 15px;
     text-align: center;
+    padding: 15px;
 }
 
 @media(max-width:600px){
@@ -92,13 +92,14 @@ footer {
         margin: 8px;
     }
 
-    .hero h1 {
+    h1 {
         font-size: 30px;
     }
 }
-</style>
 
+</style>
 </head>
+
 
 <body>
 
@@ -112,34 +113,53 @@ footer {
 
 
 <section id="home" class="hero">
+
+<div class="card">
+
 <h1>United Empire of Arina</h1>
-<p>Official Government Website</p>
+
+<p>
+Official Government Website
+</p>
+
+</div>
+
 </section>
+
 
 
 <section id="about">
+
 <div class="card">
-<h2>About</h2>
+
+<h1>About</h1>
 
 <p>
-Learn more about the United Empire of Arina, its history,
-government, and information.
+This page is under construction.
+</p>
+
+<p>
+In the meantime, you can visit the United Empire of Arina Wiki.
 </p>
 
 <a href="https://micronations.wiki/wiki/Draft:United_Empire_of_Arina" target="_blank">
-<button>About Arina</button>
+<button>Wiki</button>
 </a>
 
 </div>
+
 </section>
 
 
+
 <section id="law">
+
 <div class="card">
-<h2>Laws</h2>
+
+<h1>Laws</h1>
 
 <p>
-Website under construction.
+This page is under construction.
 </p>
 
 <p>
@@ -147,12 +167,16 @@ More information will be added soon.
 </p>
 
 </div>
+
 </section>
 
 
+
 <section id="citizenship">
+
 <div class="card">
-<h2>Citizenship</h2>
+
+<h1>Citizenship</h1>
 
 <p>
 Citizenship applications are available once per person.
@@ -163,12 +187,16 @@ Request Citizenship
 </button>
 
 </div>
+
 </section>
 
 
+
 <section id="statistics">
+
 <div class="card">
-<h2>Statistics</h2>
+
+<h1>Statistics</h1>
 
 <p>
 Population: Coming Soon
@@ -179,12 +207,17 @@ Established: Coming Soon
 </p>
 
 </div>
+
 </section>
 
 
+
 <footer>
+
 © United Empire of Arina
+
 </footer>
+
 
 </body>
 </html>

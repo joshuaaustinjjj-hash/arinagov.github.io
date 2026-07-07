@@ -1,72 +1,146 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>United Empire of Arina</title>
-    <style>
-        body {
-            margin: 0;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: linear-gradient(135deg, #1a1a1a, #2f2f2f);
-            color: white;
-            font-family: Arial, Helvetica, sans-serif;
-            text-align: center;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>United Empire of Arina</title>
 
-        .container {
-            max-width: 700px;
-            padding: 40px;
-        }
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial,Helvetica,sans-serif;
+}
 
-        .icon {
-            font-size: 80px;
-            margin-bottom: 20px;
-        }
+body{
+    background:#1f1f1f;
+    color:white;
+}
 
-        h1 {
-            font-size: 42px;
-            margin: 0 0 20px;
-        }
+nav{
+    background:#111;
+    display:flex;
+    justify-content:center;
+    gap:30px;
+    padding:15px;
+    position:sticky;
+    top:0;
+    box-shadow:0 2px 8px rgba(0,0,0,.4);
+}
 
-        p {
-            font-size: 20px;
-            line-height: 1.6;
-            color: #dddddd;
-        }
+nav button{
+    background:none;
+    border:none;
+    color:white;
+    font-size:18px;
+    cursor:pointer;
+    padding:8px 15px;
+    transition:.3s;
+}
 
-        @media (max-width: 600px) {
-            h1 {
-                font-size: 32px;
-            }
+nav button:hover{
+    background:#333;
+    border-radius:5px;
+}
 
-            p {
-                font-size: 18px;
-            }
+main{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    min-height:calc(100vh - 60px);
+    padding:30px;
+}
 
-            .icon {
-                font-size: 60px;
-            }
-        }
-    </style>
+.card{
+    max-width:700px;
+    text-align:center;
+}
+
+.icon{
+    font-size:70px;
+    margin-bottom:20px;
+}
+
+h1{
+    margin-bottom:20px;
+    font-size:40px;
+}
+
+p{
+    font-size:20px;
+    line-height:1.6;
+    color:#ddd;
+}
+
+@media(max-width:600px){
+    nav{
+        gap:10px;
+    }
+
+    nav button{
+        font-size:16px;
+        padding:8px;
+    }
+
+    h1{
+        font-size:30px;
+    }
+
+    p{
+        font-size:18px;
+    }
+}
+</style>
+
 </head>
 <body>
 
-<div class="container">
-    <div class="icon">🚧</div>
+<nav>
+    <button onclick="home()">Home</button>
+    <button onclick="construction('About')">About</button>
+    <button onclick="construction('Laws')">Laws</button>
+</nav>
 
-    <h1>United Empire of Arina</h1>
+<main>
+    <div class="card" id="content">
+        <div class="icon">🏛️</div>
+        <h1>United Empire of Arina</h1>
+        <p>
+            This is the official website of the
+            <strong>United Empire of Arina</strong>.<br><br>
+            The website is currently <strong>under construction</strong>.
+            We are working to bring you new information and services.
+            <br><br>
+            Thank you for your patience.
+        </p>
+    </div>
+</main>
 
-    <p>
-        This is the official website of the <strong>United Empire of Arina</strong>.<br><br>
-        Our website is currently <strong>under construction</strong> as we work to bring you new information and services.
-        <br><br>
-        Thank you for your patience. Please check back soon.
-    </p>
-</div>
+<script>
+function home(){
+    document.getElementById("content").innerHTML=`
+        <div class="icon">🏛️</div>
+        <h1>United Empire of Arina</h1>
+        <p>
+            This is the official website of the
+            <strong>United Empire of Arina</strong>.<br><br>
+            The website is currently <strong>under construction</strong>.
+            We are working to bring you new information and services.
+            <br><br>
+            Thank you for your patience.
+        </p>
+    `;
+}
+
+function construction(page){
+    document.getElementById("content").innerHTML=`
+        <div class="icon">🚧</div>
+        <h1>${page}</h1>
+        <p>This page is currently <strong>under construction</strong>.<br><br>Please check back later.</p>
+    `;
+}
+</script>
 
 </body>
 </html>

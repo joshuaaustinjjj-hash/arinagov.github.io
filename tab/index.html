@@ -34,8 +34,10 @@
             box-shadow: 0 1px 3px 0 rgba(60,64,67,0.3), 0 4px 8px 3px rgba(60,64,67,0.15);
             border-color: #747775;
         }
-        .google-btn:active {
-            background-color: #eeeeee;
+        .google-btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            opacity: 0.6;
         }
         .google-icon {
             width: 18px;
@@ -59,14 +61,14 @@
         <p>Access your simulated multi-stage balances.</p>
         
         <!-- BRANDED GOOGLE BUTTON -->
-        <button id="login-btn" class="google-btn">
+        <button id="login-btn" class="google-btn" disabled>
             <svg class="google-icon" xmlns="http://w3.org" viewBox="0 0 48 48">
                 <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
                 <path fill="#4285F4" d="M46.5 24c0-1.55-.15-3.24-.47-4.77H24v9.03h12.75c-.55 2.97-2.22 5.49-4.75 7.19l7.39 5.73C43.71 37.14 46.5 31.23 46.5 24z"/>
                 <path fill="#FBBC05" d="M10.54 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.98-6.19z"/>
                 <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.39-5.73c-2.11 1.4-4.81 2.32-8.5 2.32-6.26 0-11.57-4.22-13.46-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
             </svg>
-            <span>Continue with Google</span>
+            <span id="btn-text">Connecting to App Engine...</span>
         </button>
     </div>
 
@@ -84,32 +86,28 @@
         <button id="logout-btn" class="logout">Log Out</button>
     </div>
 
-    <!-- LOAD V8 STABLE COMPAT CORE DEPENDENCIES -->
+    <!-- SCRIPT INFRASTRUCTURE COMPAT LAYERS -->
     <script src="https://gstatic.com"></script>
     <script src="https://gstatic.com"></script>
     <script src="https://gstatic.com"></script>
 
     <script>
-        // Your Firebase project credentials
+        // Your precise configuration with verified measurementId
         const firebaseConfig = {
             apiKey: "AIzaSyBNhT4zf-o9thQtch5b0g4FIlpBLeDS0YU",
-            authDomain: "website-2eba3.firebaseapp.com", 
+            authDomain: "website-2eba3.firebaseapp.com",
             projectId: "website-2eba3",
             storageBucket: "website-2eba3.firebasestorage.app",
             messagingSenderId: "376796164206",
-            appId: "1:376796164206:web:04111c46a72655fce7367f"
+            appId: "1:376796164206:web:04111c46a72655fce7367f",
+            measurementId: "G-WV6JHV93ET"
         };
 
-        // Initialize App Engine under V8 Context
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
-        const provider = new firebase.auth.GoogleAuthProvider();
-
-        // UI Document Hooks
+        // UI Document Elements
         const loginScreen = document.getElementById('login-screen');
         const dashboardScreen = document.getElementById('dashboard-screen');
         const loginBtn = document.getElementById('login-btn');
+        const btnText = document.getElementById('btn-text');
         const logoutBtn = document.getElementById('logout-btn');
         const welcomeMsg = document.getElementById('welcome-msg');
         const balanceVal = document.getElementById('balance-val');
@@ -119,70 +117,87 @@
 
         let userDocRef = null;
 
-        // Login Logic - Using stable Popup fallback
-        loginBtn.addEventListener('click', () => {
-            auth.signInWithPopup(provider).catch(err => {
-                console.error("Login broke:", err);
-                alert("Auth system alert: " + err.message);
+        try {
+            // Initialize Engine
+            firebase.initializeApp(firebaseConfig);
+            const auth = firebase.auth();
+            const db = firebase.firestore();
+            const provider = new firebase.auth.GoogleAuthProvider();
+
+            // Safe Unlocking Check: Enable the UI button once dependencies are ready
+            loginBtn.removeAttribute('disabled');
+            btnText.innerText = "Continue with Google";
+
+            // Click Handler Action
+            loginBtn.addEventListener('click', () => {
+                auth.signInWithPopup(provider).catch(err => {
+                    console.error("Popup channel dropped:", err);
+                    alert("Authentication Failure: " + err.message);
+                });
             });
-        });
 
-        // Logout Logic
-        logoutBtn.addEventListener('click', () => {
-            auth.signOut();
-        });
+            // Logout Event
+            logoutBtn.addEventListener('click', () => {
+                auth.signOut();
+            });
 
-        // Auth Observer Loop
-        auth.onAuthStateChanged(async (user) => {
-            if (user) {
-                loginScreen.classList.add('hidden');
-                dashboardScreen.classList.remove('hidden');
-                welcomeMsg.innerText = `Welcome, ${user.displayName}!`;
-                
-                userDocRef = db.collection("users").doc(user.uid);
-                const docSnap = await userDocRef.get();
-                
-                if (docSnap.exists) {
-                    balanceVal.innerText = docSnap.data().balance.toFixed(2);
+            // Active Account Synchronization Loop
+            auth.onAuthStateChanged(async (user) => {
+                if (user) {
+                    loginScreen.classList.add('hidden');
+                    dashboardScreen.classList.remove('hidden');
+                    welcomeMsg.innerText = `Welcome, ${user.displayName}!`;
+                    
+                    userDocRef = db.collection("users").doc(user.uid);
+                    const docSnap = await userDocRef.get();
+                    
+                    if (docSnap.exists) {
+                        balanceVal.innerText = docSnap.data().balance.toFixed(2);
+                    } else {
+                        await userDocRef.set({ balance: 100.00 });
+                        balanceVal.innerText = "100.00";
+                    }
                 } else {
-                    await userDocRef.set({ balance: 100.00 });
-                    balanceVal.innerText = "100.00";
+                    loginScreen.classList.remove('hidden');
+                    dashboardScreen.classList.add('hidden');
+                    userDocRef = null;
                 }
-            } else {
-                loginScreen.classList.remove('hidden');
-                dashboardScreen.classList.add('hidden');
-                userDocRef = null;
-            }
-        });
+            });
 
-        // Transaction Operations: Deposit
-        depositBtn.addEventListener('click', async () => {
-            const val = parseFloat(amountInput.value);
-            if (val > 0 && userDocRef) {
-                await userDocRef.update({
-                    balance: firebase.firestore.FieldValue.increment(val)
-                });
-                const docSnap = await userDocRef.get();
-                balanceVal.innerText = docSnap.data().balance.toFixed(2);
-                amountInput.value = "";
-            }
-        });
+            // Transaction Engine: Deposits
+            depositBtn.addEventListener('click', async () => {
+                const val = parseFloat(amountInput.value);
+                if (val > 0 && userDocRef) {
+                    await userDocRef.update({
+                        balance: firebase.firestore.FieldValue.increment(val)
+                    });
+                    const docSnap = await userDocRef.get();
+                    balanceVal.innerText = docSnap.data().balance.toFixed(2);
+                    amountInput.value = "";
+                }
+            });
 
-        // Transaction Operations: Withdraw
-        withdrawBtn.addEventListener('click', async () => {
-            const val = parseFloat(amountInput.value);
-            const currentBal = parseFloat(balanceVal.innerText);
-            if (val > 0 && val <= currentBal && userDocRef) {
-                await userDocRef.update({
-                    balance: firebase.firestore.FieldValue.increment(-val)
-                });
-                const docSnap = await userDocRef.get();
-                balanceVal.innerText = docSnap.data().balance.toFixed(2);
-                amountInput.value = "";
-            } else if (val > currentBal) {
-                alert("Insufficient funds!");
-            }
-        });
+            // Transaction Engine: Withdrawals
+            withdrawBtn.addEventListener('click', async () => {
+                const val = parseFloat(amountInput.value);
+                const currentBal = parseFloat(balanceVal.innerText);
+                if (val > 0 && val <= currentBal && userDocRef) {
+                    await userDocRef.update({
+                        balance: firebase.firestore.FieldValue.increment(-val)
+                    });
+                    const docSnap = await userDocRef.get();
+                    balanceVal.innerText = docSnap.data().balance.toFixed(2);
+                    amountInput.value = "";
+                } else if (val > currentBal) {
+                    alert("Insufficient funds!");
+                }
+            });
+
+        } catch (initializationError) {
+            console.error("Crash during service load:", initializationError);
+            btnText.innerText = "Connection Failed.";
+            alert("Crash Detected: Please look at your developer console inspect logs.");
+        }
     </script>
 </body>
 </html>

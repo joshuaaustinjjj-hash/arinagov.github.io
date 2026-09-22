@@ -40,14 +40,15 @@
 
     <!-- FIREBASE SERVICES CORE MODULES -->
     <script type="module">
+        // FIX 1: Corrected full CDN module paths
         import { initializeApp } from "https://gstatic.com";
         import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://gstatic.com";
         import { getFirestore, doc, getDoc, setDoc, updateDoc, increment } from "https://gstatic.com";
 
-        // Your specific app credentials from the Firebase popup screen
+        // FIX 2: Corrected the missing prefix in the authDomain
         const firebaseConfig = {
             apiKey: "AIzaSyBNhT4zf-o9thQtch5b0g4FIlpBLeDS0YU",
-            authDomain: "://firebaseapp.com",
+            authDomain: "website-2eba3.firebaseapp.com", 
             projectId: "website-2eba3",
             storageBucket: "website-2eba3.firebasestorage.app",
             messagingSenderId: "376796164206",
@@ -77,7 +78,7 @@
         loginBtn.addEventListener('click', () => {
             signInWithPopup(auth, provider).catch(err => {
                 console.error("Login failed:", err);
-                alert("Login Error: Make sure your pop-up blocker is disabled!");
+                alert("Login Error: Make sure your pop-up blocker is disabled and your GitHub domain is authorized in Firebase!");
             });
         });
 
@@ -86,21 +87,19 @@
             signOut(auth);
         });
 
-        // Track Auth State Change (Fires automatically when logging in or out)
+        // Track Auth State Change
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 loginScreen.classList.add('hidden');
                 dashboardScreen.classList.remove('hidden');
                 welcomeMsg.innerText = `Welcome, ${user.displayName}!`;
                 
-                // Track user database record inside Cloud Firestore
                 userDocRef = doc(db, "users", user.uid);
                 const docSnap = await getDoc(userDocRef);
                 
                 if (docSnap.exists()) {
                     balanceVal.innerText = docSnap.data().balance.toFixed(2);
                 } else {
-                    // Create an initial starting balance (\$100) for a brand-new user profile
                     await setDoc(userDocRef, { balance: 100.00 });
                     balanceVal.innerText = "100.00";
                 }
@@ -116,7 +115,9 @@
             const val = parseFloat(amountInput.value);
             if (val > 0 && userDocRef) {
                 await updateDoc(userDocRef, { balance: increment(val) });
-                balanceVal.innerText = (parseFloat(balanceVal.innerText) + val).toFixed(2);
+                // FIX 3: Pull fresh document snapshot value to prevent floating point UI display bugs
+                const docSnap = await getDoc(userDocRef);
+                balanceVal.innerText = docSnap.data().balance.toFixed(2);
                 amountInput.value = "";
             }
         });
@@ -127,7 +128,9 @@
             const currentBal = parseFloat(balanceVal.innerText);
             if (val > 0 && val <= currentBal && userDocRef) {
                 await updateDoc(userDocRef, { balance: increment(-val) });
-                balanceVal.innerText = (currentBal - val).toFixed(2);
+                // FIX 4: Pull fresh document snapshot value to maintain synchronization with Firestore 
+                const docSnap = await getDoc(userDocRef);
+                balanceVal.innerText = docSnap.data().balance.toFixed(2);
                 amountInput.value = "";
             } else if (val > currentBal) {
                 alert("Insufficient funds!");

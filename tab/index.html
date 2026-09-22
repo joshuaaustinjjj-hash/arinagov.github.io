@@ -3,125 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Secure Sandbox Bank</title>
+    <title>Sandbox Bank</title>
     <style>
-        body { font-family: 'Roboto', system-ui, sans-serif; background: #f0f2f5; text-align: center; padding: 40px; }
+        body { font-family: sans-serif; background: #f0f2f5; text-align: center; padding: 40px; }
         .card { background: white; max-width: 400px; margin: 0 auto; padding: 30px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .hidden { display: none; }
-        
-        /* OFFICIAL GOOGLE ID BUTTON STYLING */
-        .google-btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            background-color: #ffffff;
-            color: #1f1f1f;
-            border: 1px solid #747775;
-            padding: 0 16px;
-            font-size: 14px;
-            font-weight: 500;
-            font-family: 'Roboto', sans-serif;
-            border-radius: 20px;
-            cursor: pointer;
-            height: 40px;
-            width: 85%;
-            transition: background-color 0.2s, box-shadow 0.2s;
-            margin: 10px 0 20px 0;
-            box-sizing: border-box;
-        }
-        .google-btn:hover {
-            background-color: #f8fafc;
-            box-shadow: 0 1px 3px 0 rgba(60,64,67,0.3), 0 4px 8px 3px rgba(60,64,67,0.15);
-            border-color: #747775;
-        }
-        .google-btn:disabled {
-            background-color: #cccccc;
-            cursor: not-allowed;
-            opacity: 0.6;
-        }
-        .google-icon {
-            width: 18px;
-            height: 18px;
-            margin-right: 12px;
-        }
-
-        /* DIVIDER STYLING */
-        .divider {
-            display: flex;
-            align-items: center;
-            text-align: center;
-            color: #70757a;
-            font-size: 12px;
-            margin: 15px 0;
-        }
-        .divider::before, .divider::after {
-            content: '';
-            flex: 1;
-            border-bottom: 1px solid #dadce0;
-        }
-        .divider:not(:empty)::before { margin-right: .25em; }
-        .divider:not(:empty)::after { margin-left: .25em; }
-
-        /* STANDARD FORM & BUTTONS */
-        button.action-btn { background: #1a73e8; color: white; border: none; padding: 12px 20px; font-size: 16px; border-radius: 6px; cursor: pointer; margin: 10px 5px; width: 85%; box-sizing: border-box; font-weight: bold;}
-        button.logout { background: #6c757d; border: none; padding: 10px 20px; font-size: 16px; border-radius: 6px; cursor: pointer; margin: 10px; color: white; width: auto;}
-        button.dashboard-action { background: #1a73e8; color: white; border: none; padding: 10px 20px; font-size: 16px; border-radius: 6px; cursor: pointer; margin: 10px 5px; width: auto;}
-        input { padding: 12px; font-size: 16px; width: 85%; margin: 8px 0; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
-        h2 { color: #2c3e50; margin-top: 0; }
+        .google-btn { display: inline-flex; align-items: center; justify-content: center; background: white; color: #1f1f1f; border: 1px solid #747775; padding: 12px; border-radius: 20px; cursor: pointer; width: 85%; box-sizing: border-box; margin: 10px 0; }
+        .google-icon { width: 18px; height: 18px; margin-right: 12px; }
+        .divider { display: flex; align-items: center; text-align: center; color: #70757a; font-size: 12px; margin: 15px 0; }
+        .divider::before, .divider::after { content: ''; flex: 1; border-bottom: 1px solid #dadce0; }
+        button.action-btn { background: #1a73e8; color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; width: 85%; font-weight: bold; }
+        button.dashboard-action { background: #1a73e8; color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; margin: 5px; }
+        button.logout { background: #6c757d; border: none; padding: 10px; border-radius: 6px; cursor: pointer; color: white; }
+        input { padding: 12px; width: 85%; margin: 8px 0; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
         .balance { font-size: 32px; font-weight: bold; color: #27ae60; margin: 20px 0; }
-        .toggle-text { color: #1a73e8; font-size: 14px; margin-top: 15px; cursor: pointer; text-decoration: none; font-weight: 500;}
-        .toggle-text:hover { text-decoration: underline; }
+        .toggle-text { color: #1a73e8; font-size: 14px; margin-top: 15px; cursor: pointer; }
     </style>
 </head>
 <body>
-
-    <!-- AUTHENTICATION GATEWAY PANEL -->
     <div id="auth-screen" class="card">
-        <h2 id="auth-title">🔒 Sandbox Mobile Bank</h2>
-        <p id="auth-desc">Log in or create a profile to test multi-stage balances.</p>
-        
-        <!-- OAUTH METHOD: GOOGLE SIGN IN -->
+        <h2>🔒 Sandbox Bank</h2>
+        <p id="auth-desc">Log in or create a profile.</p>
         <button id="google-login-btn" class="google-btn" disabled>
-            <svg class="google-icon" xmlns="http://w3.org" viewBox="0 0 48 48">
-                <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-                <path fill="#4285F4" d="M46.5 24c0-1.55-.15-3.24-.47-4.77H24v9.03h12.75c-.55 2.97-2.22 5.49-4.75 7.19l7.39 5.73C43.71 37.14 46.5 31.23 46.5 24z"/>
-                <path fill="#FBBC05" d="M10.54 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.98-6.19z"/>
-                <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.39-5.73c-2.11 1.4-4.81 2.32-8.5 2.32-6.26 0-11.57-4.22-13.46-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-            </svg>
-            <span id="google-btn-text">Initializing Secure Engine...</span>
+            <svg class="google-icon" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24c0-1.55-.15-3.24-.47-4.77H24v9.03h12.75c-.55 2.97-2.22 5.49-4.75 7.19l7.39 5.73C43.71 37.14 46.5 31.23 46.5 24z"/><path fill="#FBBC05" d="M10.54 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.98-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.39-5.73c-2.11 1.4-4.81 2.32-8.5 2.32-6.26 0-11.57-4.22-13.46-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+            <span id="google-btn-text">Loading...</span>
         </button>
-
-        <div class="divider">or use security password</div>
-
-        <!-- IDENTITY FORM METHODS: EMAIL/PASSWORD -->
-        <input type="email" id="email-input" placeholder="Email Address">
-        <input type="password" id="password-input" placeholder="Password">
-        <br>
+        <div class="divider">or</div>
+        <input type="email" id="email-input" placeholder="Email">
+        <input type="password" id="password-input" placeholder="Password"><br>
         <button id="submit-auth-btn" class="action-btn">Log In</button>
-        <div id="toggle-auth-view" class="toggle-text">Need a new profile? Create account here</div>
+        <div id="toggle-auth-view" class="toggle-text">Create account</div>
     </div>
-
-    <!-- BANKING DASHBOARD -->
     <div id="dashboard-screen" class="card hidden">
-        <h2 id="welcome-msg">Welcome Back!</h2>
-        <p>Your Current Balance:</p>
-        <div class="balance">\$<span id="balance-val">0.00</span></div>
-        
-        <input type="number" id="amount-input" placeholder="Enter amount (\$)">
-        <br>
-        <button id="deposit-btn" class="dashboard-action">Deposit Money</button>
-        <button id="withdraw-btn" class="dashboard-action">Withdraw Money</button>
-        <br>
+        <h2 id="welcome-msg">Welcome!</h2>
+        <div class="balance">$<span id="balance-val">0.00</span></div>
+        <input type="number" id="amount-input" placeholder="Amount ($)"><br>
+        <button id="deposit-btn" class="dashboard-action">Deposit</button>
+        <button id="withdraw-btn" class="dashboard-action">Withdraw</button><br>
         <button id="logout-btn" class="logout">Log Out</button>
     </div>
-
-    <!-- MODERN ES MODULE PIPELINE -->
-    <script type="module">
-        import { initializeApp } from "https://gstatic.com";
-        import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://gstatic.com";
-        import { getFirestore, doc, getDoc, setDoc, updateDoc, increment } from "https://gstatic.com";
-
-        // Your verified dashboard credentials
+    <script src="https://gstatic.com"></script>
+    <script src="https://gstatic.com"></script>
+    <script src="https://gstatic.com"></script>
+    <script>
         const firebaseConfig = {
             apiKey: "AIzaSyBNhT4zf-o9thQtch5b0g4FIlpBLeDS0YU",
             authDomain: "://firebaseapp.com",
@@ -131,10 +55,7 @@
             appId: "1:376796164206:web:04111c46a72655fce7367f",
             measurementId: "G-WV6JHV93ET"
         };
-
-        // DOM Element Hooks
         const authScreen = document.getElementById('auth-screen');
-        const authTitle = document.getElementById('auth-title');
         const authDesc = document.getElementById('auth-desc');
         const googleLoginBtn = document.getElementById('google-login-btn');
         const googleBtnText = document.getElementById('google-btn-text');
@@ -142,7 +63,6 @@
         const passwordInput = document.getElementById('password-input');
         const submitAuthBtn = document.getElementById('submit-auth-btn');
         const toggleAuthView = document.getElementById('toggle-auth-view');
-
         const dashboardScreen = document.getElementById('dashboard-screen');
         const logoutBtn = document.getElementById('logout-btn');
         const welcomeMsg = document.getElementById('welcome-msg');
@@ -150,52 +70,58 @@
         const amountInput = document.getElementById('amount-input');
         const depositBtn = document.getElementById('deposit-btn');
         const withdrawBtn = document.getElementById('withdraw-btn');
-
-        let isLoginMode = true;
-        let userDocRef = null;
-
+        let isLoginMode = true; let userDocRef = null;
         try {
-            // Initialize App Infrastructure Modules
-            const app = initializeApp(firebaseConfig);
-            const auth = getAuth(app);
-            const db = getFirestore(app);
-            const provider = new GoogleAuthProvider();
-            provider.setCustomParameters({ prompt: 'select_account' });
-
-            // Activate elements once pipeline confirms connectivity status
-            googleLoginBtn.removeAttribute('disabled');
-            googleBtnText.innerText = "Continue with Google";
-
-            // --- AUTH SELECTION LOGIC FLOWS ---
-
-            // Method A: Google Account Sign In Action
+            firebase.initializeApp(firebaseConfig);
+            const auth = firebase.auth(); const db = firebase.firestore();
+            const provider = new firebase.auth.GoogleAuthProvider();
+            googleLoginBtn.removeAttribute('disabled'); googleBtnText.innerText = "Continue with Google";
             googleLoginBtn.addEventListener('click', () => {
-                googleBtnText.innerText = "Connecting to Google...";
-                signInWithRedirect(auth, provider).catch(err => {
-                    alert("Redirect Failed: " + err.message);
-                    googleBtnText.innerText = "Continue with Google";
-                });
+                googleBtnText.innerText = "Connecting...";
+                auth.signInWithRedirect(provider).catch(err => alert(err.message));
             });
-
-            // Process verification token responses back from redirect route channel
-            getRedirectResult(auth)
-                .then((result) => {
-                    if (result) {
-                        console.log("Logged in via redirect flow:", result.user);
-                    }
-                })
-                .catch((error) => {
-                    console.error("Authentication mismatch state details:", error);
-                    alert("Google Authorization Error: " + error.message);
-                });
-
-            // Toggle Text Form UI Interface States
             toggleAuthView.addEventListener('click', () => {
                 isLoginMode = !isLoginMode;
-                if (isLoginMode) {
-                    authTitle.innerText = "🔒 Sandbox Mobile Bank";
-                    authDesc.innerText = "Log in or create a profile to test multi-stage balances.";
-                    submitAuthBtn.innerText = "Log In";
-                    toggleAuthView.innerText = "Need a new profile? Create account here";
+                submitAuthBtn.innerText = isLoginMode ? "Log In" : "Register";
+                toggleAuthView.innerText = isLoginMode ? "Create account" : "Sign in instead";
+            });
+            submitAuthBtn.addEventListener('click', () => {
+                const em = emailInput.value.trim(); const pw = passwordInput.value;
+                if (!em || !pw) return alert("Fill all fields");
+                if (isLoginMode) { auth.signInWithEmailAndPassword(em, pw).catch(err => alert(err.message)); }
+                else { auth.createUserWithEmailAndPassword(em, pw).catch(err => alert(err.message)); }
+            });
+            logoutBtn.addEventListener('click', () => { auth.signOut(); });
+            auth.onAuthStateChanged(async (user) => {
+                if (user) {
+                    authScreen.classList.add('hidden'); dashboardScreen.classList.remove('hidden');
+                    welcomeMsg.innerText = `Welcome, ${user.displayName || user.email}!`;
+                    userDocRef = db.collection("users").doc(user.uid);
+                    const docSnap = await userDocRef.get();
+                    if (docSnap.exists) { balanceVal.innerText = docSnap.data().balance.toFixed(2); }
+                    else { await userDocRef.set({ balance: 100.00 }); balanceVal.innerText = "100.00"; }
                 } else {
-                    authTitle.innerText = "🛠️ Create Sandbox Account";
+                    authScreen.classList.remove('hidden'); dashboardScreen.classList.add('hidden');
+                    userDocRef = null; googleBtnText.innerText = "Continue with Google";
+                }
+            });
+            depositBtn.addEventListener('click', async () => {
+                const val = parseFloat(amountInput.value);
+                if (val > 0 && userDocRef) {
+                    await userDocRef.update({ balance: firebase.firestore.FieldValue.increment(val) });
+                    const snap = await userDocRef.get(); balanceVal.innerText = snap.data().balance.toFixed(2);
+                    amountInput.value = "";
+                }
+            });
+            withdrawBtn.addEventListener('click', async () => {
+                const val = parseFloat(amountInput.value); const currentBal = parseFloat(balanceVal.innerText);
+                if (val > 0 && val <= currentBal && userDocRef) {
+                    await userDocRef.update({ balance: firebase.firestore.FieldValue.increment(-val) });
+                    const snap = await userDocRef.get(); balanceVal.innerText = snap.data().balance.toFixed(2);
+                    amountInput.value = "";
+                } else if (val > currentBal) { alert("Insufficient funds"); }
+            });
+        } catch(e) { alert("Connection Error"); }
+    </script>
+</body>
+</html>

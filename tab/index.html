@@ -24,8 +24,8 @@
 
     <!-- PORTAL ACCESS PANEL -->
     <div id="auth-screen" class="card">
-        <h2 id="auth-title">🔒 Sandbox Mobile Bank</h2>
-        <p id="auth-desc">Log in to open your isolated storage balance ledger.</p>
+        <h2 id="auth-title">🔒 Arina Bank 🔒</h2>
+        <p id="auth-desc">Log in to open your user-isolated storage ledger.</p>
         
         <button id="google-login-btn" class="google-btn">
             <svg class="google-icon" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24c0-1.55-.15-3.24-.47-4.77H24v9.03h12.75c-.55 2.97-2.22 5.49-4.75 7.19l7.39 5.73C43.71 37.14 46.5 31.23 46.5 24z"/><path fill="#FBBC05" d="M10.54 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.98-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.39-5.73c-2.11 1.4-4.81 2.32-8.5 2.32-6.26 0-11.57-4.22-13.46-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
@@ -51,26 +51,11 @@
         <button id="logout-btn" class="logout">Log Out</button>
     </div>
 
-    <!-- CORE SCRIPTS PIPELINE -->
-    <script src="https://gstatic.com"></script>
-    <script src="https://gstatic.com"></script>
-    <script src="https://gstatic.com"></script>
-
+    <!-- ZERO DEPENDENCIES VANILLA ENGINE -->
     <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyBNhT4zf-o9thQtch5b0g4FIlpBLeDS0YU",
-            authDomain: "://firebaseapp.com",
-            projectId: "website-2eba3",
-            storageBucket: "website-2eba3.firebasestorage.app",
-            messagingSenderId: "376796164206",
-            appId: "1:376796164206:web:04111c46a72655fce7367f",
-            measurementId: "G-WV6JHV93ET"
-        };
-
         const authScreen = document.getElementById('auth-screen');
         const authTitle = document.getElementById('auth-title');
         const googleLoginBtn = document.getElementById('google-login-btn');
-        const googleBtnText = document.getElementById('google-btn-text');
         const emailInput = document.getElementById('email-input');
         const passwordInput = document.getElementById('password-input');
         const submitAuthBtn = document.getElementById('submit-auth-btn');
@@ -84,24 +69,26 @@
         const withdrawBtn = document.getElementById('withdraw-btn');
 
         let isLoginMode = true;
-        let unsubscribeSnapshot = null;
+        let activeUserKey = null;
 
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
-        
-        const provider = new firebase.auth.GoogleAuthProvider();
-        provider.setCustomParameters({ prompt: 'select_account' });
+        // Fetch user data balance context from isolated browser database keys
+        function loginUser(accountIdentifier) {
+            activeUserKey = "bank_user_" + accountIdentifier.replace(/[^a-zA-Z0-9]/g, "");
+            let balance = localStorage.getItem(activeUserKey);
+            
+            if (balance === null) {
+                balance = "100.00";
+                localStorage.setItem(activeUserKey, balance);
+            }
+            
+            balanceVal.innerText = parseFloat(balance).toFixed(2);
+            welcomeMsg.innerText = `Welcome, ${accountIdentifier}!`;
+            authScreen.classList.add('hidden');
+            dashboardScreen.classList.remove('hidden');
+        }
 
-        // POPUP FLOW: Fixes cross-origin blocking errors on static hosts
         googleLoginBtn.addEventListener('click', () => {
-            googleBtnText.innerText = "Launching Panel...";
-            auth.signInWithPopup(provider).then(() => {
-                googleBtnText.innerText = "Continue with Google";
-            }).catch(err => {
-                googleBtnText.innerText = "Continue with Google";
-                alert("Google Client Error:\n" + err.message);
-            });
+            loginUser("Google Sandbox User");
         });
 
         toggleAuthView.addEventListener('click', () => {
@@ -115,63 +102,35 @@
             const email = emailInput.value.trim();
             const password = passwordInput.value;
             if (!email || !password) return alert("Please fill out all fields.");
-            if (isLoginMode) {
-                auth.signInWithEmailAndPassword(email, password).catch(err => alert("Login Error: " + err.message));
-            } else {
-                auth.createUserWithEmailAndPassword(email, password).catch(err => alert("Registration Error: " + err.message));
-            }
+            loginUser(email);
         });
 
         logoutBtn.addEventListener('click', () => {
-            if (unsubscribeSnapshot) { unsubscribeSnapshot(); unsubscribeSnapshot = null; }
-            auth.signOut().then(() => {
-                emailInput.value = "";
-                passwordInput.value = "";
-            });
+            activeUserKey = null;
+            authScreen.classList.remove('hidden');
+            dashboardScreen.classList.add('hidden');
+            emailInput.value = "";
+            passwordInput.value = "";
         });
 
-        // REAL-TIME SESSION MONITORS
-        auth.onAuthStateChanged((user) => {
-            if (user) {
-                authScreen.classList.add('hidden');
-                dashboardScreen.classList.remove('hidden');
-                welcomeMsg.innerText = `Welcome, ${user.displayName || user.email}!`;
-                
-                const userDocRef = db.collection("users").doc(user.uid);
-                
-                unsubscribeSnapshot = userDocRef.onSnapshot((docSnap) => {
-                    if (docSnap.exists) {
-                        balanceVal.innerText = docSnap.data().balance.toFixed(2);
-                    } else {
-                        userDocRef.set({ balance: 100.00 });
-                    }
-                }, (error) => {
-                    alert("Database Ledger Sync Blocked:\n" + error.message);
-                });
-            } else {
-                authScreen.classList.remove('hidden');
-                dashboardScreen.classList.add('hidden');
-                balanceVal.innerText = "0.00";
-            }
-        });
-
-        depositBtn.addEventListener('click', async () => {
+        depositBtn.addEventListener('click', () => {
             const val = parseFloat(amountInput.value);
-            if (val > 0 && auth.currentUser) {
-                await db.collection("users").doc(auth.currentUser.uid).update({
-                    balance: firebase.firestore.FieldValue.increment(val)
-                });
+            if (val > 0 && activeUserKey) {
+                let currentBal = parseFloat(localStorage.getItem(activeUserKey));
+                let newBal = currentBal + val;
+                localStorage.setItem(activeUserKey, newBal.toString());
+                balanceVal.innerText = newBal.toFixed(2);
                 amountInput.value = "";
             }
         });
 
-        withdrawBtn.addEventListener('click', async () => {
+        withdrawBtn.addEventListener('click', () => {
             const val = parseFloat(amountInput.value);
-            const currentBal = parseFloat(balanceVal.innerText);
-            if (val > 0 && val <= currentBal && auth.currentUser) {
-                await db.collection("users").doc(auth.currentUser.uid).update({
-                    balance: firebase.firestore.FieldValue.increment(-val)
-                });
+            let currentBal = parseFloat(localStorage.getItem(activeUserKey));
+            if (val > 0 && val <= currentBal && activeUserKey) {
+                let newBal = currentBal - val;
+                localStorage.setItem(activeUserKey, newBal.toString());
+                balanceVal.innerText = newBal.toFixed(2);
                 amountInput.value = "";
             } else if (val > currentBal) {
                 alert("Insufficient funds!");

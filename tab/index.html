@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Isolated Sandbox Bank</title>
+    <title>Sandbox Mobile Bank</title>
     <style>
-        body { font-family: sans-serif; background: #f0f2f5; text-align: center; padding: 40px; }
+        body { font-family: system-ui, sans-serif; background: #f0f2f5; text-align: center; padding: 40px; }
         .card { background: white; max-width: 400px; margin: 0 auto; padding: 30px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .hidden { display: none; }
         .google-btn { display: inline-flex; align-items: center; justify-content: center; background: white; color: #1f1f1f; border: 1px solid #747775; padding: 12px; border-radius: 20px; cursor: pointer; width: 85%; box-sizing: border-box; margin: 10px 0; font-weight: 500;}
@@ -21,35 +21,45 @@
     </style>
 </head>
 <body>
+
+    <!-- PORTAL ACCESS PANEL -->
     <div id="auth-screen" class="card">
         <h2 id="auth-title">🔒 Sandbox Mobile Bank</h2>
-        <p id="auth-desc">Log in with a profile to see an isolated user balance ledger.</p>
+        <p id="auth-desc">Log in to open your isolated storage balance ledger.</p>
+        
         <button id="google-login-btn" class="google-btn">
             <svg class="google-icon" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24c0-1.55-.15-3.24-.47-4.77H24v9.03h12.75c-.55 2.97-2.22 5.49-4.75 7.19l7.39 5.73C43.71 37.14 46.5 31.23 46.5 24z"/><path fill="#FBBC05" d="M10.54 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.98-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.39-5.73c-2.11 1.4-4.81 2.32-8.5 2.32-6.26 0-11.57-4.22-13.46-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
             <span id="google-btn-text">Continue with Google</span>
         </button>
-        <div class="divider">or use code panel</div>
+        
+        <div class="divider">or use standard credentials</div>
+        
         <input type="email" id="email-input" placeholder="Email Address">
         <input type="password" id="password-input" placeholder="Password"><br>
         <button id="submit-auth-btn" class="action-btn">Log In</button>
         <div id="toggle-auth-view" class="toggle-text">Need a new profile? Create account here</div>
     </div>
+
+    <!-- MAIN OPERATIONS DASHBOARD -->
     <div id="dashboard-screen" class="card hidden">
         <h2 id="welcome-msg">Welcome Back!</h2>
         <p>Your Isolated User Wallet Balance:</p>
-        <div class="balance">$<span id="balance-val">0.00</span></div>
-        <input type="number" id="amount-input" placeholder="Enter amount ($)"><br>
+        <div class="balance">\$<span id="balance-val">0.00</span></div>
+        <input type="number" id="amount-input" placeholder="Enter amount (\$)"><br>
         <button id="deposit-btn" class="dashboard-action">Deposit Money</button>
         <button id="withdraw-btn" class="dashboard-action">Withdraw Money</button><br>
         <button id="logout-btn" class="logout">Log Out</button>
     </div>
+
+    <!-- CORE SCRIPTS PIPELINE -->
     <script src="https://gstatic.com"></script>
     <script src="https://gstatic.com"></script>
     <script src="https://gstatic.com"></script>
+
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyBNhT4zf-o9thQtch5b0g4FIlpBLeDS0YU",
-            authDomain: "website-2eba3.firebaseapp.com",
+            authDomain: "://firebaseapp.com",
             projectId: "website-2eba3",
             storageBucket: "website-2eba3.firebasestorage.app",
             messagingSenderId: "376796164206",
@@ -74,24 +84,23 @@
         const withdrawBtn = document.getElementById('withdraw-btn');
 
         let isLoginMode = true;
-        let unsubscribeSnapshot = null; // Clears old database snapshots on account switch
+        let unsubscribeSnapshot = null;
 
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
         
         const provider = new firebase.auth.GoogleAuthProvider();
-        // FORCE GOOGLE TO ALWAYS PROMPT FOR ACCOUNT CHOICE ON EVERY CLICK
         provider.setCustomParameters({ prompt: 'select_account' });
 
-        // FIXED SIGN-IN: Uses Popup window channel to pass cross-origin storage locks cleanly
+        // POPUP FLOW: Fixes cross-origin blocking errors on static hosts
         googleLoginBtn.addEventListener('click', () => {
             googleBtnText.innerText = "Launching Panel...";
             auth.signInWithPopup(provider).then(() => {
                 googleBtnText.innerText = "Continue with Google";
             }).catch(err => {
                 googleBtnText.innerText = "Continue with Google";
-                alert("Auth Error: " + err.message);
+                alert("Google Client Error:\n" + err.message);
             });
         });
 
@@ -107,9 +116,9 @@
             const password = passwordInput.value;
             if (!email || !password) return alert("Please fill out all fields.");
             if (isLoginMode) {
-                auth.signInWithEmailAndPassword(email, password).catch(err => alert("Error: " + err.message));
+                auth.signInWithEmailAndPassword(email, password).catch(err => alert("Login Error: " + err.message));
             } else {
-                auth.createUserWithEmailAndPassword(email, password).catch(err => alert("Error: " + err.message));
+                auth.createUserWithEmailAndPassword(email, password).catch(err => alert("Registration Error: " + err.message));
             }
         });
 
@@ -121,28 +130,24 @@
             });
         });
 
-        // REAL-TIME USER SYSTEM LOOP
+        // REAL-TIME SESSION MONITORS
         auth.onAuthStateChanged((user) => {
             if (user) {
                 authScreen.classList.add('hidden');
                 dashboardScreen.classList.remove('hidden');
                 welcomeMsg.innerText = `Welcome, ${user.displayName || user.email}!`;
                 
-                // Track active user path document reference securely via Firebase User ID
                 const userDocRef = db.collection("users").doc(user.uid);
                 
-                // Bind a clean real-time balance listener to the current account context
                 unsubscribeSnapshot = userDocRef.onSnapshot((docSnap) => {
                     if (docSnap.exists) {
                         balanceVal.innerText = docSnap.data().balance.toFixed(2);
                     } else {
-                        // Create individual \$100 ledger if user profile is brand new
                         userDocRef.set({ balance: 100.00 });
                     }
                 }, (error) => {
                     alert("Database Ledger Sync Blocked:\n" + error.message);
                 });
-
             } else {
                 authScreen.classList.remove('hidden');
                 dashboardScreen.classList.add('hidden');
@@ -169,7 +174,7 @@
                 });
                 amountInput.value = "";
             } else if (val > currentBal) {
-                alert("Insufficient funds in your isolated user wallet!");
+                alert("Insufficient funds!");
             }
         });
     </script>

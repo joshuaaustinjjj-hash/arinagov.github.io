@@ -5,11 +5,47 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Secure Sandbox Bank</title>
     <style>
-        body { font-family: system-ui, sans-serif; background: #f0f2f5; text-align: center; padding: 40px; }
+        body { font-family: 'Roboto', system-ui, sans-serif; background: #f0f2f5; text-align: center; padding: 40px; }
         .card { background: white; max-width: 400px; margin: 0 auto; padding: 30px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .hidden { display: none; }
-        button { background: #1a73e8; color: white; border: none; padding: 10px 20px; font-size: 16px; border-radius: 6px; cursor: pointer; margin: 10px; }
-        button.logout { background: #6c757d; }
+        
+        /* OFFICIAL GOOGLE ID BUTTON STYLING */
+        .google-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #ffffff;
+            color: #1f1f1f;
+            border: 1px solid #747775;
+            padding: 0 16px;
+            font-size: 14px;
+            font-weight: 500;
+            font-family: 'Roboto', sans-serif;
+            border-radius: 20px;
+            cursor: pointer;
+            height: 40px;
+            min-width: 240px;
+            transition: background-color 0.2s, box-shadow 0.2s;
+            margin: 20px 0;
+            box-sizing: border-box;
+        }
+        .google-btn:hover {
+            background-color: #f8fafc;
+            box-shadow: 0 1px 3px 0 rgba(60,64,67,0.3), 0 4px 8px 3px rgba(60,64,67,0.15);
+            border-color: #747775;
+        }
+        .google-btn:active {
+            background-color: #eeeeee;
+        }
+        .google-icon {
+            width: 18px;
+            height: 18px;
+            margin-right: 12px;
+        }
+
+        /* STANDARD BANK BUTTONS */
+        button.action-btn { background: #1a73e8; color: white; border: none; padding: 10px 20px; font-size: 16px; border-radius: 6px; cursor: pointer; margin: 10px; }
+        button.logout { background: #6c757d; border: none; padding: 10px 20px; font-size: 16px; border-radius: 6px; cursor: pointer; margin: 10px; color: white; }
         input { padding: 10px; font-size: 16px; width: 80%; margin: 10px 0; border: 1px solid #ccc; border-radius: 6px; }
         h2 { color: #2c3e50; }
         .balance { font-size: 32px; font-weight: bold; color: #27ae60; margin: 20px 0; }
@@ -20,8 +56,19 @@
     <!-- LOGIN SCREEN -->
     <div id="login-screen" class="card">
         <h2>🔒 Sandbox Mobile Bank</h2>
-        <p>Log in with your Google account to access your simulated balance.</p>
-        <button id="login-btn">Sign In with Google</button>
+        <p>Access your simulated multi-stage balances.</p>
+        
+        <!-- NEW BRANDED GOOGLE BUTTON -->
+        <button id="login-btn" class="google-btn">
+            <!-- Inline Google "G" Vector Graphic Asset -->
+            <svg class="google-icon" xmlns="http://w3.org" viewBox="0 0 48 48">
+                <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                <path fill="#4285F4" d="M46.5 24c0-1.55-.15-3.24-.47-4.77H24v9.03h12.75c-.55 2.97-2.22 5.49-4.75 7.19l7.39 5.73C43.71 37.14 46.5 31.23 46.5 24z"/>
+                <path fill="#FBBC05" d="M10.54 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.98-6.19z"/>
+                <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.39-5.73c-2.11 1.4-4.81 2.32-8.5 2.32-6.26 0-11.57-4.22-13.46-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+            </svg>
+            <span>Continue with Google</span>
+        </button>
     </div>
 
     <!-- BANKING DASHBOARD -->
@@ -32,36 +79,32 @@
         
         <input type="number" id="amount-input" placeholder="Enter amount (\$)">
         <br>
-        <button id="deposit-btn">Deposit Money</button>
-        <button id="withdraw-btn">Withdraw Money</button>
+        <button id="deposit-btn" class="action-btn">Deposit Money</button>
+        <button id="withdraw-btn" class="action-btn">Withdraw Money</button>
         <br>
         <button id="logout-btn" class="logout">Log Out</button>
     </div>
 
     <!-- FIREBASE SERVICES CORE MODULES -->
     <script type="module">
-        // FIX 1: Corrected full CDN module paths
         import { initializeApp } from "https://gstatic.com";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://gstatic.com";
+        import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://gstatic.com";
         import { getFirestore, doc, getDoc, setDoc, updateDoc, increment } from "https://gstatic.com";
 
-        // FIX 2: Corrected the missing prefix in the authDomain
         const firebaseConfig = {
             apiKey: "AIzaSyBNhT4zf-o9thQtch5b0g4FIlpBLeDS0YU",
-            authDomain: "website-2eba3.firebaseapp.com", 
+            authDomain: "://firebaseapp.com", 
             projectId: "website-2eba3",
             storageBucket: "website-2eba3.firebasestorage.app",
             messagingSenderId: "376796164206",
             appId: "1:376796164206:web:04111c46a72655fce7367f"
         };
 
-        // Initialize Services
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
         const provider = new GoogleAuthProvider();
 
-        // UI Target Hooks
         const loginScreen = document.getElementById('login-screen');
         const dashboardScreen = document.getElementById('dashboard-screen');
         const loginBtn = document.getElementById('login-btn');
@@ -74,20 +117,27 @@
 
         let userDocRef = null;
 
-        // Login Logic
         loginBtn.addEventListener('click', () => {
-            signInWithPopup(auth, provider).catch(err => {
-                console.error("Login failed:", err);
-                alert("Login Error: Make sure your pop-up blocker is disabled and your GitHub domain is authorized in Firebase!");
+            signInWithRedirect(auth, provider).catch(err => {
+                console.error("Redirect initialization failed:", err);
+                alert("Redirect Error: " + err.message);
             });
         });
 
-        // Logout Logic
         logoutBtn.addEventListener('click', () => {
             signOut(auth);
         });
 
-        // Track Auth State Change
+        getRedirectResult(auth)
+            .then((result) => {
+                if (result) {
+                    console.log("Successfully authenticated user from channel:", result.user.displayName);
+                }
+            })
+            .catch((error) => {
+                console.error("Redirect connection failure status:", error);
+            });
+
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 loginScreen.classList.add('hidden');
@@ -110,25 +160,21 @@
             }
         });
 
-        // Transaction Handling: Deposit
         depositBtn.addEventListener('click', async () => {
             const val = parseFloat(amountInput.value);
             if (val > 0 && userDocRef) {
                 await updateDoc(userDocRef, { balance: increment(val) });
-                // FIX 3: Pull fresh document snapshot value to prevent floating point UI display bugs
                 const docSnap = await getDoc(userDocRef);
                 balanceVal.innerText = docSnap.data().balance.toFixed(2);
                 amountInput.value = "";
             }
         });
 
-        // Transaction Handling: Withdraw
         withdrawBtn.addEventListener('click', async () => {
             const val = parseFloat(amountInput.value);
             const currentBal = parseFloat(balanceVal.innerText);
             if (val > 0 && val <= currentBal && userDocRef) {
                 await updateDoc(userDocRef, { balance: increment(-val) });
-                // FIX 4: Pull fresh document snapshot value to maintain synchronization with Firestore 
                 const docSnap = await getDoc(userDocRef);
                 balanceVal.innerText = docSnap.data().balance.toFixed(2);
                 amountInput.value = "";

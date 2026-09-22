@@ -3,65 +3,136 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Under Construction</title>
+    <title>Secure Sandbox Bank</title>
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: #f7f9fa;
-            color: #333;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            text-align: center;
-        }
-        .container {
-            max-width: 500px;
-            padding: 40px;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-            border-top: 5px solid #f39c12; /* Warning yellow accent */
-        }
-        h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            color: #2c3e50;
-        }
-        p {
-            font-size: 1.1rem;
-            color: #7f8c8d;
-            line-height: 1.6;
-            margin-bottom: 30px;
-        }
-        .btn {
-            display: inline-block;
-            padding: 12px 24px;
-            background-color: #2c3e50;
-            color: white;
-            text-decoration: none;
-            border-radius: 6px;
-            font-weight: bold;
-            transition: background 0.2s;
-        }
-        .btn:hover {
-            background-color: #34495e;
-        }
-        .icon {
-            font-size: 4rem;
-            margin-bottom: 20px;
-        }
+        body { font-family: system-ui, sans-serif; background: #f0f2f5; text-align: center; padding: 40px; }
+        .card { background: white; max-width: 400px; margin: 0 auto; padding: 30px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .hidden { display: none; }
+        button { background: #1a73e8; color: white; border: none; padding: 10px 20px; font-size: 16px; border-radius: 6px; cursor: pointer; margin: 10px; }
+        button.logout { background: #6c757d; }
+        input { padding: 10px; font-size: 16px; width: 80%; margin: 10px 0; border: 1px solid #ccc; border-radius: 6px; }
+        h2 { color: #2c3e50; }
+        .balance { font-size: 32px; font-weight: bold; color: #27ae60; margin: 20px 0; }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <div class="icon">🚧</div>
-        <h1>Under Construction</h1>
-        <p>We are working hard to bring you this page. Please check back soon to see what we've built!</p>
-        <a href="../" class="btn">Return to Homepage</a>
+    <!-- LOGIN SCREEN -->
+    <div id="login-screen" class="card">
+        <h2>🔒 Sandbox Mobile Bank</h2>
+        <p>Log in with your Google account to access your simulated balance.</p>
+        <button id="login-btn">Sign In with Google</button>
     </div>
 
+    <!-- BANKING DASHBOARD -->
+    <div id="dashboard-screen" class="card hidden">
+        <h2 id="welcome-msg">Welcome Back!</h2>
+        <p>Your Current Balance:</p>
+        <div class="balance">\$<span id="balance-val">0.00</span></div>
+        
+        <input type="number" id="amount-input" placeholder="Enter amount (\$)">
+        <br>
+        <button id="deposit-btn">Deposit Money</button>
+        <button id="withdraw-btn">Withdraw Money</button>
+        <br>
+        <button id="logout-btn" class="logout">Log Out</button>
+    </div>
+
+    <!-- FIREBASE SERVICES CORE MODULES -->
+    <script type="module">
+        import { initializeApp } from "https://gstatic.com";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://gstatic.com";
+        import { getFirestore, doc, getDoc, setDoc, updateDoc, increment } from "https://gstatic.com";
+
+        // Your specific app credentials from the Firebase popup screen
+        const firebaseConfig = {
+            apiKey: "AIzaSyBNhT4zf-o9thQtch5b0g4FIlpBLeDS0YU",
+            authDomain: "://firebaseapp.com",
+            projectId: "website-2eba3",
+            storageBucket: "website-2eba3.firebasestorage.app",
+            messagingSenderId: "376796164206",
+            appId: "1:376796164206:web:04111c46a72655fce7367f"
+        };
+
+        // Initialize Services
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const provider = new GoogleAuthProvider();
+
+        // UI Target Hooks
+        const loginScreen = document.getElementById('login-screen');
+        const dashboardScreen = document.getElementById('dashboard-screen');
+        const loginBtn = document.getElementById('login-btn');
+        const logoutBtn = document.getElementById('logout-btn');
+        const welcomeMsg = document.getElementById('welcome-msg');
+        const balanceVal = document.getElementById('balance-val');
+        const amountInput = document.getElementById('amount-input');
+        const depositBtn = document.getElementById('deposit-btn');
+        const withdrawBtn = document.getElementById('withdraw-btn');
+
+        let userDocRef = null;
+
+        // Login Logic
+        loginBtn.addEventListener('click', () => {
+            signInWithPopup(auth, provider).catch(err => {
+                console.error("Login failed:", err);
+                alert("Login Error: Make sure your pop-up blocker is disabled!");
+            });
+        });
+
+        // Logout Logic
+        logoutBtn.addEventListener('click', () => {
+            signOut(auth);
+        });
+
+        // Track Auth State Change (Fires automatically when logging in or out)
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                loginScreen.classList.add('hidden');
+                dashboardScreen.classList.remove('hidden');
+                welcomeMsg.innerText = `Welcome, ${user.displayName}!`;
+                
+                // Track user database record inside Cloud Firestore
+                userDocRef = doc(db, "users", user.uid);
+                const docSnap = await getDoc(userDocRef);
+                
+                if (docSnap.exists()) {
+                    balanceVal.innerText = docSnap.data().balance.toFixed(2);
+                } else {
+                    // Create an initial starting balance (\$100) for a brand-new user profile
+                    await setDoc(userDocRef, { balance: 100.00 });
+                    balanceVal.innerText = "100.00";
+                }
+            } else {
+                loginScreen.classList.remove('hidden');
+                dashboardScreen.classList.add('hidden');
+                userDocRef = null;
+            }
+        });
+
+        // Transaction Handling: Deposit
+        depositBtn.addEventListener('click', async () => {
+            const val = parseFloat(amountInput.value);
+            if (val > 0 && userDocRef) {
+                await updateDoc(userDocRef, { balance: increment(val) });
+                balanceVal.innerText = (parseFloat(balanceVal.innerText) + val).toFixed(2);
+                amountInput.value = "";
+            }
+        });
+
+        // Transaction Handling: Withdraw
+        withdrawBtn.addEventListener('click', async () => {
+            const val = parseFloat(amountInput.value);
+            const currentBal = parseFloat(balanceVal.innerText);
+            if (val > 0 && val <= currentBal && userDocRef) {
+                await updateDoc(userDocRef, { balance: increment(-val) });
+                balanceVal.innerText = (currentBal - val).toFixed(2);
+                amountInput.value = "";
+            } else if (val > currentBal) {
+                alert("Insufficient funds!");
+            }
+        });
+    </script>
 </body>
 </html>

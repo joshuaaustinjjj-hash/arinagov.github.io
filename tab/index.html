@@ -46,11 +46,11 @@
         <button id="withdraw-btn" class="dashboard-action">Withdraw</button><br>
         <button id="logout-btn" class="logout">Log Out</button>
     </div>
-    <script type="module">
-        import { initializeApp } from "https://gstatic.com";
-        import { getAuth, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, GoogleAuthProvider } from "https://gstatic.com";
-        import { getFirestore, doc, setDoc, updateDoc, increment, onSnapshot } from "https://gstatic.com";
-
+    <!-- Load Firebase via classic Global Scripts (Works everywhere) -->
+    <script src="https://gstatic.com"></script>
+    <script src="https://gstatic.com"></script>
+    <script src="https://gstatic.com"></script>
+    <script>
         const firebaseConfig = {
             apiKey: "AIzaSyBNhT4zf-o9thQtch5b0g4FIlpBLeDS0YU",
             authDomain: "://firebaseapp.com",
@@ -77,18 +77,23 @@
         const depositBtn = document.getElementById('deposit-btn');
         const withdrawBtn = document.getElementById('withdraw-btn');
 
-        let isLoginMode = true; let unsubscribeSnapshot = null;
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app); const db = getFirestore(app);
-        const provider = new GoogleAuthProvider();
+        let isLoginMode = true; 
+        let unsubscribeSnapshot = null;
+
+        // Initialize using global scope instances
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth(); 
+        const db = firebase.firestore();
+        const provider = new firebase.auth.GoogleAuthProvider();
         provider.setCustomParameters({ prompt: 'select_account' });
 
+        // Instantly unblock button text since module blocks are avoided
         googleLoginBtn.removeAttribute('disabled');
         googleBtnText.innerText = "Continue with Google";
 
         googleLoginBtn.addEventListener('click', () => {
             googleBtnText.innerText = "Launching Google...";
-            signInWithPopup(auth, provider).then(() => {
+            auth.signInWithPopup(provider).then(() => {
                 googleBtnText.innerText = "Continue with Google";
             }).catch(err => {
                 googleBtnText.innerText = "Continue with Google";
@@ -107,27 +112,27 @@
             const em = emailInput.value.trim(); const pw = passwordInput.value;
             if (!em || !pw) return alert("Fill in entries.");
             if (isLoginMode) {
-                signInWithEmailAndPassword(auth, em, pw).catch(err => alert(err.message));
+                auth.signInWithEmailAndPassword(em, pw).catch(err => alert(err.message));
             } else {
-                createUserWithEmailAndPassword(auth, em, pw).catch(err => alert(err.message));
+                auth.createUserWithEmailAndPassword(em, pw).catch(err => alert(err.message));
             }
         });
 
         logoutBtn.addEventListener('click', () => {
             if (unsubscribeSnapshot) { unsubscribeSnapshot(); unsubscribeSnapshot = null; }
-            signOut(auth);
+            auth.signOut();
         });
 
-        onAuthStateChanged(auth, async (user) => {
+        auth.onAuthStateChanged(async (user) => {
             if (user) {
                 authScreen.classList.add('hidden'); dashboardScreen.classList.remove('hidden');
                 welcomeMsg.innerText = `Welcome, ${user.displayName || user.email}!`;
-                const userDocRef = doc(db, "users", user.uid);
-                unsubscribeSnapshot = onSnapshot(userDocRef, async (docSnap) => {
-                    if (docSnap.exists()) {
+                const userDocRef = db.collection("users").doc(user.uid);
+                unsubscribeSnapshot = userDocRef.onSnapshot((docSnap) => {
+                    if (docSnap.exists) {
                         balanceVal.innerText = docSnap.data().balance.toFixed(2);
                     } else {
-                        await setDoc(userDocRef, { balance: 100.00 });
+                        userDocRef.set({ balance: 100.00 });
                     }
                 }, (err) => alert("Database Sync Error: " + err.message));
             } else {
@@ -139,7 +144,9 @@
         depositBtn.addEventListener('click', async () => {
             const val = parseFloat(amountInput.value);
             if (val > 0 && auth.currentUser) {
-                await updateDoc(doc(db, "users", auth.currentUser.uid), { balance: increment(val) });
+                await db.collection("users").doc(auth.currentUser.uid).update({
+                    balance: firebase.firestore.FieldValue.increment(val)
+                });
                 amountInput.value = "";
             }
         });
@@ -147,7 +154,9 @@
         withdrawBtn.addEventListener('click', async () => {
             const val = parseFloat(amountInput.value); const currentBal = parseFloat(balanceVal.innerText);
             if (val > 0 && val <= currentBal && auth.currentUser) {
-                await updateDoc(doc(db, "users", auth.currentUser.uid), { balance: increment(-val) });
+                await db.collection("users").doc(auth.currentUser.uid).update({
+                    balance: firebase.firestore.FieldValue.increment(-val)
+                });
                 amountInput.value = "";
             } else if (val > currentBal) { alert("Insufficient funds!"); }
         });

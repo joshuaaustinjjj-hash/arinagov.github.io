@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sandbox Bank</title>
+    <title>Isolated Sandbox Bank</title>
     <style>
         body { font-family: sans-serif; background: #f0f2f5; text-align: center; padding: 40px; }
         .card { background: white; max-width: 400px; margin: 0 auto; padding: 30px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .hidden { display: none; }
-        .google-btn { display: inline-flex; align-items: center; justify-content: center; background: white; color: #1f1f1f; border: 1px solid #747775; padding: 12px; border-radius: 20px; cursor: pointer; width: 85%; box-sizing: border-box; margin: 10px 0; }
+        .google-btn { display: inline-flex; align-items: center; justify-content: center; background: white; color: #1f1f1f; border: 1px solid #747775; padding: 12px; border-radius: 20px; cursor: pointer; width: 85%; box-sizing: border-box; margin: 10px 0; font-weight: 500;}
         .google-icon { width: 18px; height: 18px; margin-right: 12px; }
         .divider { display: flex; align-items: center; text-align: center; color: #70757a; font-size: 12px; margin: 15px 0; }
         .divider::before, .divider::after { content: ''; flex: 1; border-bottom: 1px solid #dadce0; }
@@ -17,29 +17,30 @@
         button.logout { background: #6c757d; border: none; padding: 10px; border-radius: 6px; cursor: pointer; color: white; }
         input { padding: 12px; width: 85%; margin: 8px 0; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
         .balance { font-size: 32px; font-weight: bold; color: #27ae60; margin: 20px 0; }
-        .toggle-text { color: #1a73e8; font-size: 14px; margin-top: 15px; cursor: pointer; }
+        .toggle-text { color: #1a73e8; font-size: 14px; margin-top: 15px; cursor: pointer; display: inline-block;}
     </style>
 </head>
 <body>
     <div id="auth-screen" class="card">
-        <h2>🔒 Sandbox Bank</h2>
-        <p id="auth-desc">Log in or create a profile.</p>
+        <h2 id="auth-title">🔒 Sandbox Mobile Bank</h2>
+        <p id="auth-desc">Log in with a profile to see an isolated user balance ledger.</p>
         <button id="google-login-btn" class="google-btn">
             <svg class="google-icon" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24c0-1.55-.15-3.24-.47-4.77H24v9.03h12.75c-.55 2.97-2.22 5.49-4.75 7.19l7.39 5.73C43.71 37.14 46.5 31.23 46.5 24z"/><path fill="#FBBC05" d="M10.54 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.98-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.39-5.73c-2.11 1.4-4.81 2.32-8.5 2.32-6.26 0-11.57-4.22-13.46-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
             <span id="google-btn-text">Continue with Google</span>
         </button>
-        <div class="divider">or</div>
-        <input type="email" id="email-input" placeholder="Email">
+        <div class="divider">or use code panel</div>
+        <input type="email" id="email-input" placeholder="Email Address">
         <input type="password" id="password-input" placeholder="Password"><br>
         <button id="submit-auth-btn" class="action-btn">Log In</button>
-        <div id="toggle-auth-view" class="toggle-text">Create account</div>
+        <div id="toggle-auth-view" class="toggle-text">Need a new profile? Create account here</div>
     </div>
     <div id="dashboard-screen" class="card hidden">
-        <h2 id="welcome-msg">Welcome!</h2>
+        <h2 id="welcome-msg">Welcome Back!</h2>
+        <p>Your Isolated User Wallet Balance:</p>
         <div class="balance">$<span id="balance-val">0.00</span></div>
-        <input type="number" id="amount-input" placeholder="Amount ($)"><br>
-        <button id="deposit-btn" class="dashboard-action">Deposit</button>
-        <button id="withdraw-btn" class="dashboard-action">Withdraw</button><br>
+        <input type="number" id="amount-input" placeholder="Enter amount ($)"><br>
+        <button id="deposit-btn" class="dashboard-action">Deposit Money</button>
+        <button id="withdraw-btn" class="dashboard-action">Withdraw Money</button><br>
         <button id="logout-btn" class="logout">Log Out</button>
     </div>
     <script src="https://gstatic.com"></script>
@@ -48,14 +49,16 @@
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyBNhT4zf-o9thQtch5b0g4FIlpBLeDS0YU",
-            authDomain: "://firebaseapp.com",
+            authDomain: "website-2eba3.firebaseapp.com",
             projectId: "website-2eba3",
             storageBucket: "website-2eba3.firebasestorage.app",
             messagingSenderId: "376796164206",
             appId: "1:376796164206:web:04111c46a72655fce7367f",
             measurementId: "G-WV6JHV93ET"
         };
+
         const authScreen = document.getElementById('auth-screen');
+        const authTitle = document.getElementById('auth-title');
         const googleLoginBtn = document.getElementById('google-login-btn');
         const googleBtnText = document.getElementById('google-btn-text');
         const emailInput = document.getElementById('email-input');
@@ -69,91 +72,105 @@
         const amountInput = document.getElementById('amount-input');
         const depositBtn = document.getElementById('deposit-btn');
         const withdrawBtn = document.getElementById('withdraw-btn');
-        let isLoginMode = true; 
-        let backupBalance = 100.00; // Local sandbox backup value if Firebase is blocked
-        let isFirebaseWorking = false;
 
-        try {
-            if (typeof firebase !== 'undefined') {
-                firebase.initializeApp(firebaseConfig);
-                var auth = firebase.auth();
-                var db = firebase.firestore();
-                var provider = new firebase.auth.GoogleAuthProvider();
-                isFirebaseWorking = true;
-            }
-        } catch(e) { console.warn("Firebase script blocked by system extensions. Running offline mode."); }
+        let isLoginMode = true;
+        let unsubscribeSnapshot = null; // Clears old database snapshots on account switch
 
-        function renderUI(user, email) {
-            authScreen.classList.add('hidden');
-            dashboardScreen.classList.remove('hidden');
-            welcomeMsg.innerText = `Welcome, ${user || email}!`;
-            balanceVal.innerText = backupBalance.toFixed(2);
-        }
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        
+        const provider = new firebase.auth.GoogleAuthProvider();
+        // FORCE GOOGLE TO ALWAYS PROMPT FOR ACCOUNT CHOICE ON EVERY CLICK
+        provider.setCustomParameters({ prompt: 'select_account' });
 
+        // FIXED SIGN-IN: Uses Popup window channel to pass cross-origin storage locks cleanly
         googleLoginBtn.addEventListener('click', () => {
-            if (!isFirebaseWorking) { return renderUI("Google Sandbox Tester", "sandbox@google.com"); }
-            googleBtnText.innerText = "Connecting...";
-            auth.signInWithRedirect(provider).catch(() => renderUI("Fallback User", "user@test.com"));
+            googleBtnText.innerText = "Launching Panel...";
+            auth.signInWithPopup(provider).then(() => {
+                googleBtnText.innerText = "Continue with Google";
+            }).catch(err => {
+                googleBtnText.innerText = "Continue with Google";
+                alert("Auth Error: " + err.message);
+            });
         });
 
         toggleAuthView.addEventListener('click', () => {
             isLoginMode = !isLoginMode;
-            submitAuthBtn.innerText = isLoginMode ? "Log In" : "Register";
-            toggleAuthView.innerText = isLoginMode ? "Create account" : "Sign in instead";
+            authTitle.innerText = isLoginMode ? "🔒 Sandbox Mobile Bank" : "🛠️ Create Sandbox Account";
+            submitAuthBtn.innerText = isLoginMode ? "Log In" : "Register Account";
+            toggleAuthView.innerText = isLoginMode ? "Need a new profile? Create account here" : "Already registered? Sign in here";
         });
 
         submitAuthBtn.addEventListener('click', () => {
-            const em = emailInput.value.trim(); const pw = passwordInput.value;
-            if (!em || !pw) return alert("Fill all fields");
-            if (!isFirebaseWorking) { return renderUI("", em); }
-            if (isLoginMode) { auth.signInWithEmailAndPassword(em, pw).catch(() => renderUI("", em)); }
-            else { auth.createUserWithEmailAndPassword(em, pw).catch(() => renderUI("", em)); }
+            const email = emailInput.value.trim();
+            const password = passwordInput.value;
+            if (!email || !password) return alert("Please fill out all fields.");
+            if (isLoginMode) {
+                auth.signInWithEmailAndPassword(email, password).catch(err => alert("Error: " + err.message));
+            } else {
+                auth.createUserWithEmailAndPassword(email, password).catch(err => alert("Error: " + err.message));
+            }
         });
 
         logoutBtn.addEventListener('click', () => {
-            if (isFirebaseWorking) auth.signOut();
-            authScreen.classList.remove('hidden');
-            dashboardScreen.classList.add('hidden');
-            emailInput.value = ""; passwordInput.value = "";
+            if (unsubscribeSnapshot) { unsubscribeSnapshot(); unsubscribeSnapshot = null; }
+            auth.signOut().then(() => {
+                emailInput.value = "";
+                passwordInput.value = "";
+            });
         });
 
-        if (isFirebaseWorking) {
-            auth.onAuthStateChanged(async (user) => {
-                if (user) {
-                    authScreen.classList.add('hidden'); dashboardScreen.classList.remove('hidden');
-                    welcomeMsg.innerText = `Welcome, ${user.displayName || user.email}!`;
-                    const ref = db.collection("users").doc(user.uid);
-                    const docSnap = await ref.get();
-                    if (docSnap.exists) { 
-                        backupBalance = docSnap.data().balance;
-                    } else { 
-                        await ref.set({ balance: 100.00 }); backupBalance = 100.00; 
+        // REAL-TIME USER SYSTEM LOOP
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                authScreen.classList.add('hidden');
+                dashboardScreen.classList.remove('hidden');
+                welcomeMsg.innerText = `Welcome, ${user.displayName || user.email}!`;
+                
+                // Track active user path document reference securely via Firebase User ID
+                const userDocRef = db.collection("users").doc(user.uid);
+                
+                // Bind a clean real-time balance listener to the current account context
+                unsubscribeSnapshot = userDocRef.onSnapshot((docSnap) => {
+                    if (docSnap.exists) {
+                        balanceVal.innerText = docSnap.data().balance.toFixed(2);
+                    } else {
+                        // Create individual \$100 ledger if user profile is brand new
+                        userDocRef.set({ balance: 100.00 });
                     }
-                    balanceVal.innerText = backupBalance.toFixed(2);
-                }
-            });
-        }
+                }, (error) => {
+                    alert("Database Ledger Sync Blocked:\n" + error.message);
+                });
+
+            } else {
+                authScreen.classList.remove('hidden');
+                dashboardScreen.classList.add('hidden');
+                balanceVal.innerText = "0.00";
+            }
+        });
 
         depositBtn.addEventListener('click', async () => {
             const val = parseFloat(amountInput.value);
-            if (val > 0) {
-                backupBalance += val;
-                if (isFirebaseWorking && auth.currentUser) {
-                    await db.collection("users").doc(auth.currentUser.uid).update({ balance: backupBalance });
-                }
-                balanceVal.innerText = backupBalance.toFixed(2); amountInput.value = "";
+            if (val > 0 && auth.currentUser) {
+                await db.collection("users").doc(auth.currentUser.uid).update({
+                    balance: firebase.firestore.FieldValue.increment(val)
+                });
+                amountInput.value = "";
             }
         });
 
         withdrawBtn.addEventListener('click', async () => {
             const val = parseFloat(amountInput.value);
-            if (val > 0 && val <= backupBalance) {
-                backupBalance -= val;
-                if (isFirebaseWorking && auth.currentUser) {
-                    await db.collection("users").doc(auth.currentUser.uid).update({ balance: backupBalance });
-                }
-                balanceVal.innerText = backupBalance.toFixed(2); amountInput.value = "";
-            } else if (val > backupBalance) { alert("Insufficient funds"); }
+            const currentBal = parseFloat(balanceVal.innerText);
+            if (val > 0 && val <= currentBal && auth.currentUser) {
+                await db.collection("users").doc(auth.currentUser.uid).update({
+                    balance: firebase.firestore.FieldValue.increment(-val)
+                });
+                amountInput.value = "";
+            } else if (val > currentBal) {
+                alert("Insufficient funds in your isolated user wallet!");
+            }
         });
     </script>
 </body>

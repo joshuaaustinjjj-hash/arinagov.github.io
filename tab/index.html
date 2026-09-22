@@ -58,9 +58,8 @@
         <h2>🔒 Sandbox Mobile Bank</h2>
         <p>Access your simulated multi-stage balances.</p>
         
-        <!-- NEW BRANDED GOOGLE BUTTON -->
+        <!-- BRANDED GOOGLE BUTTON -->
         <button id="login-btn" class="google-btn">
-            <!-- Inline Google "G" Vector Graphic Asset -->
             <svg class="google-icon" xmlns="http://w3.org" viewBox="0 0 48 48">
                 <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
                 <path fill="#4285F4" d="M46.5 24c0-1.55-.15-3.24-.47-4.77H24v9.03h12.75c-.55 2.97-2.22 5.49-4.75 7.19l7.39 5.73C43.71 37.14 46.5 31.23 46.5 24z"/>
@@ -85,26 +84,29 @@
         <button id="logout-btn" class="logout">Log Out</button>
     </div>
 
-    <!-- FIREBASE SERVICES CORE MODULES -->
-    <script type="module">
-        import { initializeApp } from "https://gstatic.com";
-        import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://gstatic.com";
-        import { getFirestore, doc, getDoc, setDoc, updateDoc, increment } from "https://gstatic.com";
+    <!-- LOAD V8 STABLE COMPAT CORE DEPENDENCIES -->
+    <script src="https://gstatic.com"></script>
+    <script src="https://gstatic.com"></script>
+    <script src="https://gstatic.com"></script>
 
+    <script>
+        // Your Firebase project credentials
         const firebaseConfig = {
             apiKey: "AIzaSyBNhT4zf-o9thQtch5b0g4FIlpBLeDS0YU",
-            authDomain: "://firebaseapp.com", 
+            authDomain: "website-2eba3.firebaseapp.com", 
             projectId: "website-2eba3",
             storageBucket: "website-2eba3.firebasestorage.app",
             messagingSenderId: "376796164206",
             appId: "1:376796164206:web:04111c46a72655fce7367f"
         };
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const provider = new GoogleAuthProvider();
+        // Initialize App Engine under V8 Context
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        const provider = new firebase.auth.GoogleAuthProvider();
 
+        // UI Document Hooks
         const loginScreen = document.getElementById('login-screen');
         const dashboardScreen = document.getElementById('dashboard-screen');
         const loginBtn = document.getElementById('login-btn');
@@ -117,40 +119,33 @@
 
         let userDocRef = null;
 
+        // Login Logic - Using stable Popup fallback
         loginBtn.addEventListener('click', () => {
-            signInWithRedirect(auth, provider).catch(err => {
-                console.error("Redirect initialization failed:", err);
-                alert("Redirect Error: " + err.message);
+            auth.signInWithPopup(provider).catch(err => {
+                console.error("Login broke:", err);
+                alert("Auth system alert: " + err.message);
             });
         });
 
+        // Logout Logic
         logoutBtn.addEventListener('click', () => {
-            signOut(auth);
+            auth.signOut();
         });
 
-        getRedirectResult(auth)
-            .then((result) => {
-                if (result) {
-                    console.log("Successfully authenticated user from channel:", result.user.displayName);
-                }
-            })
-            .catch((error) => {
-                console.error("Redirect connection failure status:", error);
-            });
-
-        onAuthStateChanged(auth, async (user) => {
+        // Auth Observer Loop
+        auth.onAuthStateChanged(async (user) => {
             if (user) {
                 loginScreen.classList.add('hidden');
                 dashboardScreen.classList.remove('hidden');
                 welcomeMsg.innerText = `Welcome, ${user.displayName}!`;
                 
-                userDocRef = doc(db, "users", user.uid);
-                const docSnap = await getDoc(userDocRef);
+                userDocRef = db.collection("users").doc(user.uid);
+                const docSnap = await userDocRef.get();
                 
-                if (docSnap.exists()) {
+                if (docSnap.exists) {
                     balanceVal.innerText = docSnap.data().balance.toFixed(2);
                 } else {
-                    await setDoc(userDocRef, { balance: 100.00 });
+                    await userDocRef.set({ balance: 100.00 });
                     balanceVal.innerText = "100.00";
                 }
             } else {
@@ -160,22 +155,28 @@
             }
         });
 
+        // Transaction Operations: Deposit
         depositBtn.addEventListener('click', async () => {
             const val = parseFloat(amountInput.value);
             if (val > 0 && userDocRef) {
-                await updateDoc(userDocRef, { balance: increment(val) });
-                const docSnap = await getDoc(userDocRef);
+                await userDocRef.update({
+                    balance: firebase.firestore.FieldValue.increment(val)
+                });
+                const docSnap = await userDocRef.get();
                 balanceVal.innerText = docSnap.data().balance.toFixed(2);
                 amountInput.value = "";
             }
         });
 
+        // Transaction Operations: Withdraw
         withdrawBtn.addEventListener('click', async () => {
             const val = parseFloat(amountInput.value);
             const currentBal = parseFloat(balanceVal.innerText);
             if (val > 0 && val <= currentBal && userDocRef) {
-                await updateDoc(userDocRef, { balance: increment(-val) });
-                const docSnap = await getDoc(userDocRef);
+                await userDocRef.update({
+                    balance: firebase.firestore.FieldValue.increment(-val)
+                });
+                const docSnap = await userDocRef.get();
                 balanceVal.innerText = docSnap.data().balance.toFixed(2);
                 amountInput.value = "";
             } else if (val > currentBal) {
